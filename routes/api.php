@@ -23,3 +23,5 @@ Route::middleware('auth:sanctum')->group(function () {
 //butun user-ler daxil ola biler
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+ROute::get('/logout', [AuthController::class, 'logout']);

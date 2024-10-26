@@ -27,7 +27,7 @@ class AuthController extends Controller
             //$token = $user->createToken('unifurniture');
             return response()->json([
                 "data" => $user,
-               // "token" => $token->plainTextToken,
+                // "token" => $token->plainTextToken,
                 "message" => "User logged in successfully",
                 "success" => true
             ], 200);
@@ -69,5 +69,49 @@ class AuthController extends Controller
                 "success" => false
             ], 500);
         }
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:255',
+            'password' => 'required|min:5',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "errors" => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid email',
+                'success' => false
+            ], 401);
+        }
+
+        $user->password = Hash::make($request->password);
+        if ($user->save()) {
+            return response()->json([
+                "data" => $user,
+                "message" => "Password is updated successfully",
+                "success" => true
+            ], 200);
+        } else {
+            return response()->json([
+                "message" => "Password is not updated",
+                "success" => false
+            ], 500);
+        }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return response()->json([
+            'message' => 'Logout successfully',
+            'success' => true
+        ], 200);
     }
 }
