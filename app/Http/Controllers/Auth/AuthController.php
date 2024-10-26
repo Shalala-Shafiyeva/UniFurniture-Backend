@@ -24,10 +24,10 @@ class AuthController extends Controller
         }
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
-            //$token = $user->createToken('unifurniture');
+            $token = $user->createToken('unifurniture')->plainTextToken;
             return response()->json([
                 "data" => $user,
-                // "token" => $token->plainTextToken,
+                "token" => $token,
                 "message" => "User logged in successfully",
                 "success" => true
             ], 200);
