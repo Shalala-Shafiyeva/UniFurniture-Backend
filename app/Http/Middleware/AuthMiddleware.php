@@ -11,9 +11,11 @@ class AuthMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check()) { // eger user login olmayibsa
-            //return redirect()->route('auth.showLogin');
+        // eger user login olmayibsa
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized. Please log in.'], 401);
         }
+
         return $next($request);
     }
 }

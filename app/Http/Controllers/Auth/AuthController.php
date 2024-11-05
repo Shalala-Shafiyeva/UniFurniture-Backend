@@ -25,9 +25,11 @@ class AuthController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
             $token = $user->createToken('unifurniture')->plainTextToken;
+            $redirectRoute = $user->role == 'admin' ? '/dashboard' : '/';
             return response()->json([
                 "data" => $user,
                 "token" => $token,
+                "redirectRoute" => $redirectRoute,
                 "message" => "User logged in successfully",
                 "success" => true
             ], 200);
