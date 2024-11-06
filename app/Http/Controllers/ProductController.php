@@ -6,8 +6,12 @@ use App\Models\Charasteristic;
 use App\Models\Color;
 use App\Models\ColorImage;
 use App\Models\Product;
+use App\Models\ProductView;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -118,7 +122,7 @@ class ProductController extends Controller
      */
     public function show(Product $product, $id)
     {
-        $product = Product::with('category', 'type', 'characteristics', 'colors')->find($id);
+        $product = Product::with('category', 'type', 'characteristics', 'colors.color_images')->find($id);
         if ($product) {
             return response()->json([
                 "data" => $product,
@@ -273,5 +277,115 @@ class ProductController extends Controller
                 "success" => false
             ], 500);
         }
+    }
+
+    public function similarProducts($id)
+    {
+        $product = Product::with('category', 'type', 'characteristics', 'colors')->find($id);
+        $similarProducts = Product::with('category', 'type', 'characteristics', 'colors')
+            ->where('category_id', $product->category_id)
+            ->where('type_id', $product->type_id)
+            ->where('id', '!=', $product->id)
+            ->get();
+
+        if ($similarProducts->isEmpty()) {
+            return response()->json([
+                "message" => "No similar products found",
+                "success" => false
+            ]);
+        }
+        return response()->json([
+            "data" => $similarProducts,
+            "success" => true
+        ], 200);
+    }
+
+    public function publishedProducts()
+    {
+        $products = Product::with('category', 'type', 'characteristics', 'colors.color_images')->where('is_publish', true)->get();
+        if ($products->isEmpty() || !$products) {
+            return response()->json([
+                "message" => "No published products found",
+                "success" => false
+            ], 500);
+        }
+        return response()->json([
+            "data" => $products,
+            "success" => true
+        ], 200);
+    }
+
+    // public function addView($productId)
+    // {
+    //     $userId = Auth::id();
+    //     $ipAddress = FacadesRequest::ip();
+    //     $recentView = ProductView::where('product_id', $productId);
+    //     if ($userId) {
+    //         // eger login olubsa user_id sini table-a elave edecik
+    //         $recentView->where('user_id', $userId);
+    //     } else {
+    //         // eger login olmayibsa ip address-ini table-a elave edecik
+    //         $recentView->where('id_address', $ipAddress);
+    //     }
+    //     //yoxlayiriq umumiyyetle bele bir user productId-li mehsula baxib mi(eger baxibsa baxis deyerini artirmaga ehtiyac yoxdu)
+    //     $recentView = $recentView->first();
+
+    //     // eger bu mehsula bu user hele baxmayibsa
+    //     if (!$recentView) {
+    //         ProductView::create([
+    //             'product_id' => $productId,
+    //             'user_id' => $userId, //login olmayan user-ler ucun NULL elave olunacaq table-a
+    //             'id_address' => $userId ? null : $ipAddress,
+    //             'viewed_at' => Carbon::now(),
+    //         ]);
+    //     }
+
+    //     return response()->json(['message' => 'View added successfully', "user_id" => $userId, "ip_address" => $ipAddress], 200);
+    // }
+
+    public function addView(Request $request, $productId)
+    {
+        $userId = Auth::id();
+        $ipAddress = $request->ip(); // Используем $request->ip() для получения IP-адреса
+
+        $recentView = ProductView::where('product_id', $productId);
+
+        if ($userId) {
+            // Если пользователь авторизован, проверяем по user_id
+            $recentView->where('user_id', $userId);
+        } else {
+            // Если пользователь не авторизован, проверяем по id_address
+            $recentView->where('id_address', $ipAddress);
+        }
+
+        // Проверяем, есть ли уже просмотр для данного пользователя или IP-адреса
+        $recentView = $recentView->first();
+
+        // Если ещё нет просмотра для данного пользователя или IP-адреса
+        if (!$recentView) {
+            ProductView::create([
+                'product_id' => $productId,
+                'user_id' => $userId, // Для неавторизованных пользователей будет NULL
+                'id_address' => $userId ? null : $ipAddress,
+                'viewed_at' => Carbon::now(),
+            ]);
+        }
+
+        return response()->json(['message' => 'View added successfully', "user_id" => $userId, "id_address" => $ipAddress], 200);
+    }
+
+    public function reviews($productId)
+    {
+        $reviews = ProductView::where('product_id', $productId)->count();
+        if ($reviews) {
+            return response()->json([
+                "data" => $reviews,
+                "success" => true
+            ], 200);
+        }
+        return response()->json([
+            "message" => 'No reviews found',
+            "success" => false
+        ]);
     }
 }

@@ -5,17 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ColorImage extends Model
+class ProductView extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'color_id',
-        'image'
+        'product_id',
+        'user_id',
+        'id_address',
+        'viewed_at',
     ];
-
-    public function color()
-    {
-        return $this->hasOne(Color::class);
-    }
 }
