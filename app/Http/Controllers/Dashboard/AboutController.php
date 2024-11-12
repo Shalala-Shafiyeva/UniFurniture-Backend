@@ -34,7 +34,7 @@ class AboutController extends Controller
         }
         $banner = new  AboutBanner();
         $banner->title = $request->title;
-        $banner->content = $request->content;
+        $banner->content = strip_tags($request->content);
         $banner->image = $image_path;
         if ($banner->save()) {
             return response()->json([
@@ -97,7 +97,7 @@ class AboutController extends Controller
 
         $banner = AboutBanner::find($id);
         $banner->title = $request->title;
-        $banner->content = $request->content;
+        $banner->content = strip_tags($request->content);
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $image_path = $image->store('aboutbanner', 'public');

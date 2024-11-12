@@ -46,4 +46,8 @@ class Product extends Model
     public function colors(){
         return $this->hasMany(Color::class, 'product_id', 'id');
     }
+
+    public function reviews(){
+        return $this->hasMany(ProductView::class, 'product_id', 'id');
+    }
 }

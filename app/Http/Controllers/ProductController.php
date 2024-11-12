@@ -6,6 +6,7 @@ use App\Models\Charasteristic;
 use App\Models\Color;
 use App\Models\ColorImage;
 use App\Models\Product;
+use App\Models\ProductRating;
 use App\Models\ProductView;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('category', 'type', 'characteristics', 'colors')->get();
+        $products = Product::with('category', 'type', 'characteristics', 'colors.color_images')->get();
         if ($products->count() == 0) {
             return response()->json([
                 "data" => [],
@@ -284,7 +285,6 @@ class ProductController extends Controller
         $product = Product::with('category', 'type', 'characteristics', 'colors')->find($id);
         $similarProducts = Product::with('category', 'type', 'characteristics', 'colors')
             ->where('category_id', $product->category_id)
-            ->where('type_id', $product->type_id)
             ->where('id', '!=', $product->id)
             ->get();
 
@@ -315,57 +315,29 @@ class ProductController extends Controller
         ], 200);
     }
 
-    // public function addView($productId)
-    // {
-    //     $userId = Auth::id();
-    //     $ipAddress = FacadesRequest::ip();
-    //     $recentView = ProductView::where('product_id', $productId);
-    //     if ($userId) {
-    //         // eger login olubsa user_id sini table-a elave edecik
-    //         $recentView->where('user_id', $userId);
-    //     } else {
-    //         // eger login olmayibsa ip address-ini table-a elave edecik
-    //         $recentView->where('id_address', $ipAddress);
-    //     }
-    //     //yoxlayiriq umumiyyetle bele bir user productId-li mehsula baxib mi(eger baxibsa baxis deyerini artirmaga ehtiyac yoxdu)
-    //     $recentView = $recentView->first();
-
-    //     // eger bu mehsula bu user hele baxmayibsa
-    //     if (!$recentView) {
-    //         ProductView::create([
-    //             'product_id' => $productId,
-    //             'user_id' => $userId, //login olmayan user-ler ucun NULL elave olunacaq table-a
-    //             'id_address' => $userId ? null : $ipAddress,
-    //             'viewed_at' => Carbon::now(),
-    //         ]);
-    //     }
-
-    //     return response()->json(['message' => 'View added successfully', "user_id" => $userId, "ip_address" => $ipAddress], 200);
-    // }
-
     public function addView(Request $request, $productId)
     {
         $userId = Auth::id();
-        $ipAddress = $request->ip(); // Используем $request->ip() для получения IP-адреса
+        $ipAddress = $request->ip();
 
         $recentView = ProductView::where('product_id', $productId);
 
         if ($userId) {
-            // Если пользователь авторизован, проверяем по user_id
+            // eger login olubsa user_id sini table-a elave edecik
             $recentView->where('user_id', $userId);
         } else {
-            // Если пользователь не авторизован, проверяем по id_address
+            // eger login olmayibsa ip address-ini table-a elave edecik
             $recentView->where('id_address', $ipAddress);
         }
 
-        // Проверяем, есть ли уже просмотр для данного пользователя или IP-адреса
+        //yoxlayiriq umumiyyetle bele bir user productId-li mehsula baxib mi(eger baxibsa baxis deyerini artirmaga ehtiyac yoxdu)
         $recentView = $recentView->first();
 
-        // Если ещё нет просмотра для данного пользователя или IP-адреса
+        // eger bu mehsula bu user hele baxmayibsa
         if (!$recentView) {
             ProductView::create([
                 'product_id' => $productId,
-                'user_id' => $userId, // Для неавторизованных пользователей будет NULL
+                'user_id' => $userId, //login olmayan user-ler ucun NULL elave olunacaq table-a
                 'id_address' => $userId ? null : $ipAddress,
                 'viewed_at' => Carbon::now(),
             ]);
@@ -387,5 +359,39 @@ class ProductController extends Controller
             "message" => 'No reviews found',
             "success" => false
         ]);
+    }
+
+    public function productRating(Request $request, $productId)
+    {
+        $userId = Auth::id();
+
+        $validator = Validator::make($request->all(), [
+            'rating' => 'nullable|integer|min:1|max:5',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // yoxlayiriq ki bu user artiq rate veribmi mehsula, eger veribse yeniden deyise bilmez
+        $existingRating = ProductRating::where('product_id', $productId)
+            ->where('user_id', $userId)
+            ->first();
+        //eger bu user bu mehsula hele rate vermeyibse yeni bir rating yaradacaq
+        if (!$existingRating) {
+            ProductRating::create([
+                'product_id' => $productId,
+                'user_id' => $userId,
+                'rating' => $request->rating,
+            ]);
+        }
+
+        return response()->json(['message' => 'Rating submitted successfully'], 200);
+    }
+
+    public function getAverageRating($productId)
+    {
+        $averageRating = ProductRating::where('product_id', $productId)->avg('rating');
+        return response()->json(['average_rating' => $averageRating]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Basket;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +60,15 @@ class AuthController extends Controller
         $user->surname = $request->surname;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
+
+
+
         if ($user->save()) {
+            //her yaranan user-in basketi-de yaranacaq
+            $basket = new Basket();
+            $basket->user_id = $user->id;
+            $basket->save();
+            
             return response()->json([
                 "data" => $user,
                 "message" => "User created successfully",

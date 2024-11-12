@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dashboard\AboutController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
@@ -241,6 +242,16 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
 //authentification olan user-ler daxil ola biler
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/product/{productId}/addView', [ProductController::class, 'addView']);
+    Route::post('/product/{productId}/rate', [ProductController::class, 'productRating']);
+
+    Route::group(['prefix' => 'basket'], function () {
+        Route::get('/index', [BasketController::class, 'index']);
+        Route::post('/store', [BasketController::class, 'store']);
+        Route::get('/productQty', [BasketController::class, 'productQty']);
+        Route::post('/delete/{id}', [BasketController::class, 'delete']);
+        Route::post('/decrease', [BasketController::class, 'decrease']);
+        Route::post('/increase', [BasketController::class, 'increase']);
+    });
 });
 
 
@@ -255,6 +266,7 @@ Route::get('/similarProducts/{id}', [ProductController::class, 'similarProducts'
 Route::get('/publishedProducts', [ProductController::class, 'publishedProducts']);
 Route::post('/product/{productId}/addView', [ProductController::class, 'addView']);
 Route::get('/product/{productId}/reviews', [ProductController::class, 'reviews']);
+Route::get('/product/{productId}/average-rating', [ProductController::class, 'getAverageRating']);
 Route::get('/', [TypeController::class, 'index']);
 Route::get('/{id}', [TypeController::class, 'show']);
 Route::get('/', [CategoryController::class, 'index']);
