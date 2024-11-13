@@ -6,8 +6,11 @@ use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TypeController;
+use App\Http\Controllers\UserAddressController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -241,6 +244,20 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
 
 //authentification olan user-ler daxil ola biler
 Route::middleware('auth:sanctum')->group(function () {
+    Route::group(['prefix' => 'user'], function () {
+        Route::get('/index', [UserController::class, 'index']);
+        Route::post('/edit', [UserController::class, 'editPersonalInfo']);
+    });
+
+    Route::group(['prefix' => 'address'], function () {
+        Route::get('/index', [UserAddressController::class, 'index']);
+        Route::get('/show/{id}', [UserAddressController::class, 'show']);
+        Route::post('/store', [UserAddressController::class, 'store']);
+        Route::post('/edit/{id}', [UserAddressController::class, 'update']);
+        Route::get('/delete/{id}', [UserAddressController::class, 'delete']);
+        Route::get('/default/{id}', [UserAddressController::class, 'default']);
+    });
+
     Route::post('/product/{productId}/addView', [ProductController::class, 'addView']);
     Route::post('/product/{productId}/rate', [ProductController::class, 'productRating']);
 
@@ -251,6 +268,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/delete/{id}', [BasketController::class, 'delete']);
         Route::post('/decrease', [BasketController::class, 'decrease']);
         Route::post('/increase', [BasketController::class, 'increase']);
+    });
+
+    Route::group(['prefix' => 'order'], function () {
+        Route::post('/store', [OrderController::class, 'store']);
     });
 });
 
