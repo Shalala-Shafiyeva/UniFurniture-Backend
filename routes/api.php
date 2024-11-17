@@ -304,6 +304,7 @@ Route::get('/category', [CategoryController::class, 'index']);
 Route::get('/category/{id}', [CategoryController::class, 'show']);
 Route::get('/characteristic', [CharasteristicController::class, 'index']);
 Route::get('/characteristic/{id}', [CharasteristicController::class, 'show']);
+Route::get('/colorsCount', [ColorController::class, 'selectColorCount']);
 
 //ABOUT PAGE
 Route::get('/about/banner', [AboutController::class, 'publishedBanner']);

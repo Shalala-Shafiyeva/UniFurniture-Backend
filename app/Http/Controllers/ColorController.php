@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Color;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ColorController extends Controller
@@ -17,6 +18,18 @@ class ColorController extends Controller
         return response()->json([
             "data" => $colors
         ], 200);
+    }
+
+    public function selectColorCount()
+    {
+        $colorProductCount = Color::select(DB::raw('count(id) as count, name'))
+            ->groupBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $colorProductCount,
+            "success" => true
+        ]);
     }
 
     /**
@@ -40,7 +53,7 @@ class ColorController extends Controller
                 "errors" => $validator->errors(),
             ], 422);
         }
-        
+
         $color = new  Color();
         $color->name = $request->name;
         if ($color->save()) {

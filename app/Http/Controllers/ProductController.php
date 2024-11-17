@@ -11,6 +11,7 @@ use App\Models\ProductView;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Validator;
@@ -65,7 +66,22 @@ class ProductController extends Controller
             ->when($request->has('lowest'), function ($query) {
                 $query->orderBy('price', 'asc');
             })
+            ->when($request->has('categories'), function ($query) use ($request) {
+                $query->whereHas('category', function ($q) use ($request) {
+                    $q->where('name', $request->categories);
+                });
+            })
+            ->when($request->has('search'), function ($query) use ($request) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%')
+                        ->orWhere('description', 'like', '%' . $request->search . '%')
+                        ->orWhere('full_title', 'like', '%' . $request->search . '%')
+                        ->orWhere('text', 'like', '%' . $request->search . '%')
+                        ->orWhere('price', 'like', '%' . $request->search . '%');
+                });
+            })
             ->get();
+
         return response()->json([
             "data" => $products,
             "success" => true

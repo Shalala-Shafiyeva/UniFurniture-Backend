@@ -34,6 +34,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -42,6 +43,11 @@ class CategoryController extends Controller
         }
         $category = new  Category();
         $category->name = $request->name;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $path = $image->store('categoryBtns', 'public');
+        }
+        $category->image = $path;
         if ($category->save()) {
             return response()->json([
                 "data" => $category,
@@ -82,6 +88,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -90,6 +97,11 @@ class CategoryController extends Controller
         }
         $category = Category::find($id);
         $category->name = $request->name;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $path = $image->store('categoryBtns', 'public');
+        }
+        $category->image = $path;
         if ($category->save()) {
             return response()->json([
                 "data" => $category,
