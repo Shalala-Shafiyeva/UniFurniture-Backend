@@ -6,6 +6,7 @@ use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TypeController;
@@ -241,6 +242,13 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
     });
 });
 
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'about-gallery'], function () {
+        Route::post('/create', [GalleryController::class, 'store']);
+        Route::get('/delete/{id}', [GalleryController::class, 'destroy']);
+    });
+});
+
 
 //authentification olan user-ler daxil ola biler
 Route::middleware('auth:sanctum')->group(function () {
@@ -271,6 +279,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::group(['prefix' => 'order'], function () {
+        Route::get('/index', [OrderController::class, 'index']);
         Route::post('/store', [OrderController::class, 'store']);
     });
 });
@@ -288,12 +297,13 @@ Route::get('/publishedProducts', [ProductController::class, 'publishedProducts']
 Route::post('/product/{productId}/addView', [ProductController::class, 'addView']);
 Route::get('/product/{productId}/reviews', [ProductController::class, 'reviews']);
 Route::get('/product/{productId}/average-rating', [ProductController::class, 'getAverageRating']);
-Route::get('/', [TypeController::class, 'index']);
-Route::get('/{id}', [TypeController::class, 'show']);
-Route::get('/', [CategoryController::class, 'index']);
-Route::get('/{id}', [CategoryController::class, 'show']);
-Route::get('/', [CharasteristicController::class, 'index']);
-Route::get('/{id}', [CharasteristicController::class, 'show']);
+Route::get('/filteredProducts', [ProductController::class, 'filteredProducts']);
+Route::get('/type', [TypeController::class, 'index']);
+Route::get('/type/{id}', [TypeController::class, 'show']);
+Route::get('/category', [CategoryController::class, 'index']);
+Route::get('/category/{id}', [CategoryController::class, 'show']);
+Route::get('/characteristic', [CharasteristicController::class, 'index']);
+Route::get('/characteristic/{id}', [CharasteristicController::class, 'show']);
 
 //ABOUT PAGE
 Route::get('/about/banner', [AboutController::class, 'publishedBanner']);
@@ -302,3 +312,4 @@ Route::get('/about/team-title', [AboutController::class, 'publishedTeamTitle']);
 Route::get('/about/team-member', [AboutController::class, 'getTeamMembers']);
 Route::get('/about/number-title', [AboutController::class, 'publishedNumberTitle']);
 Route::get('/about/number-subtitle', [AboutController::class, 'getNumberSubtitles']);
+Route::get('/about-gallery/index', [GalleryController::class, 'index']);

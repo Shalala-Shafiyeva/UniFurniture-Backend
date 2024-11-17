@@ -35,6 +35,43 @@ class ProductController extends Controller
         ], 200);
     }
 
+    public function filteredProducts(Request $request)
+    {
+        $products = Product::with(['category', 'type', 'characteristics', 'colors.color_images'])
+            ->where('is_publish', true)
+            ->when($request->types, function ($query) use ($request) {
+                $types = explode(',', $request->types);
+                $query->whereHas('type', function ($q) use ($types) {
+                    $q->whereIn('name', $types);
+                });
+            })
+            ->when($request->has('color'), function ($query) use ($request) {
+                $query->whereHas('colors', function ($q) use ($request) {
+                    $q->where('name', $request->color);
+                });
+            })
+            ->when($request->has('sale'), function ($query) use ($request) {
+                $query->where('discount', ">=", (bool)$request->sale);
+            })
+            ->when($request->has('hasStock'), function ($query) use ($request) {
+                $query->where('hasStock', "=", (bool)$request->hasStock);
+            })
+            ->when($request->has('created_at'), function ($query) {
+                $query->orderBy("created_at", 'desc');
+            })
+            ->when($request->has('highest'), function ($query) {
+                $query->orderBy('price', 'desc');
+            })
+            ->when($request->has('lowest'), function ($query) {
+                $query->orderBy('price', 'asc');
+            })
+            ->get();
+        return response()->json([
+            "data" => $products,
+            "success" => true
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
