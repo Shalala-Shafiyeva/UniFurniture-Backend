@@ -8,6 +8,7 @@ use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TypeController;
@@ -244,10 +245,19 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'option'], function () {
+        Route::post('/store', [OptionController::class, 'store']);
+        Route::delete('/delete/{id}', [OptionController::class, 'delete']);
+        Route::post('/edit/{id}', [OptionController::class, 'update']);
+    });
+});
+
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
     Route::group(['prefix' => 'faqs'], function () {
         Route::get('/', [FAQController::class, 'index']);
+        Route::get('/{id}', [FAQController::class, 'show']);
         Route::post('/store', [FAQController::class, 'store']);
-        Route::delete('/edit/{id}', [FAQController::class, 'update']);
+        Route::post('/edit/{id}', [FAQController::class, 'update']);
         Route::delete('/delete/{id}', [FAQController::class, 'destroy']);
         Route::post('/publishFaq/{id}', [FAQController::class, 'publishFaq']);
     });
@@ -329,4 +339,8 @@ Route::get('/about-gallery/index', [GalleryController::class, 'index']);
 //FAQs
 Route::group(['prefix' => 'faqs'], function () {
     Route::post('/publishedFaqs', [FAQController::class, 'publishedFaqs']);
+});
+Route::group(['prefix' => 'options'], function () {
+    Route::get('/', [OptionController::class, 'index']);
+    Route::get('/{id}', [OptionController::class, 'show']);
 });

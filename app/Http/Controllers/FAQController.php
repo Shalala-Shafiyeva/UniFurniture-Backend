@@ -13,14 +13,7 @@ class FAQController extends Controller
      */
     public function index()
     {
-        $faqs = FAQ::all();
-        if ($faqs->isEmpty()) {
-            return response()->json([
-                'message' => 'There is no FAQ found',
-                'succes' => false
-            ]);
-        }
-
+        $faqs = FAQ::with('option')->get();
         return response()->json([
             'data' => $faqs,
             'success' => true
@@ -43,6 +36,7 @@ class FAQController extends Controller
         $validator = Validator::make($request->all(), [
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
+            'option_id' => "required|numeric|exists:options,id"
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -54,6 +48,7 @@ class FAQController extends Controller
         $faq = new FAQ();
         $faq->question = $request->question;
         $faq->answer = $request->answer;
+        $faq->option_id = $request->option_id;
 
         if (!$faq->save()) {
             return response()->json([
@@ -72,9 +67,14 @@ class FAQController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(FAQ $faq)
+    public function show($id)
     {
-        //
+        $faq = FAQ::find($id);
+        return response()->json([
+            "data" => $faq,
+            "message" => "FAQ found",
+            "success" => true
+        ]);
     }
 
     /**
@@ -93,6 +93,7 @@ class FAQController extends Controller
         $validator = Validator::make($request->all(), [
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
+            'option_id' => "required|numeric|exists:options,id"
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -110,6 +111,7 @@ class FAQController extends Controller
         }
         $faq->question = $request->question;
         $faq->answer = $request->answer;
+        $faq->option_id = $request->option_id;
 
         if (!$faq->save()) {
             return response()->json([
@@ -163,7 +165,7 @@ class FAQController extends Controller
 
     public function publishedFaqs()
     {
-        $faqs = FAQ::where("is_active", true)->get();
+        $faqs = FAQ::with('option')->where("is_active", true)->get();
         return response()->json([
             'data' => $faqs,
             "message" => 'Published FAQs',
