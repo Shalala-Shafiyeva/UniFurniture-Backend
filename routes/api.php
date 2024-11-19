@@ -6,6 +6,7 @@ use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\FAQController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -243,6 +244,16 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'faqs'], function () {
+        Route::get('/', [FAQController::class, 'index']);
+        Route::post('/store', [FAQController::class, 'store']);
+        Route::delete('/edit/{id}', [FAQController::class, 'update']);
+        Route::delete('/delete/{id}', [FAQController::class, 'destroy']);
+        Route::post('/publishFaq/{id}', [FAQController::class, 'publishFaq']);
+    });
+});
+
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
     Route::group(['prefix' => 'about-gallery'], function () {
         Route::post('/create', [GalleryController::class, 'store']);
         Route::get('/delete/{id}', [GalleryController::class, 'destroy']);
@@ -314,3 +325,8 @@ Route::get('/about/team-member', [AboutController::class, 'getTeamMembers']);
 Route::get('/about/number-title', [AboutController::class, 'publishedNumberTitle']);
 Route::get('/about/number-subtitle', [AboutController::class, 'getNumberSubtitles']);
 Route::get('/about-gallery/index', [GalleryController::class, 'index']);
+
+//FAQs
+Route::group(['prefix' => 'faqs'], function () {
+    Route::post('/publishedFaqs', [FAQController::class, 'publishedFaqs']);
+});
