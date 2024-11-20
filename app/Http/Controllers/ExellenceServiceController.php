@@ -87,9 +87,39 @@ class ExellenceServiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExellenceService $exellenceService)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|max:255',
+            'content' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "errors" => $validator->errors(),
+            ], 422);
+        }
+
+        $exellence = ExellenceService::find($id);
+        $exellence->title = $request->title;
+        $exellence->content = strip_tags($request->content);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $image_path = $image->store('aboutbanner', 'public');
+            $exellence->image = $image_path;
+        }
+        if ($exellence->save()) {
+            return response()->json([
+                "data" => $exellence,
+                "message" => "Shop exellence updated successfully",
+                "success" => true
+            ], 200);
+        } else {
+            return response()->json([
+                "message" => "Shop exellence not updated",
+                "success" => false
+            ], 500);
+        }
     }
 
     /**
