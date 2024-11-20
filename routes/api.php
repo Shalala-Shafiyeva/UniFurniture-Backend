@@ -6,14 +6,19 @@ use App\Http\Controllers\BasketController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CharasteristicController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\ExellenceServiceController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ServiceArticleController;
+use App\Http\Controllers\ServiceArticleTitleController;
 use App\Http\Controllers\TypeController;
 use App\Http\Controllers\UserAddressController;
 use App\Http\Controllers\UserController;
+use App\Models\ExellenceService;
+use App\Models\ServiceArticle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -270,6 +275,36 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
     });
 });
 
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'service-article-title'], function () {
+        Route::get('/', [ServiceArticleTitleController::class, 'index']);
+        Route::get('/{id}', [ServiceArticleTitleController::class, 'show']);
+        Route::post('/create', [ServiceArticleTitleController::class, 'store']);
+        Route::delete('/delete/{id}', [ServiceArticleTitleController::class, 'destroy']);
+        Route::post('/edit/{id}', [ServiceArticleTitleController::class, 'update']);
+        Route::post('/publish/{id}', [ServiceArticleTitleController::class, 'publishTitle']);
+    });
+});
+
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'service-article'], function () {
+        Route::post('/create', [ServiceArticleController::class, 'store']);
+        Route::delete('/delete/{id}', [ServiceArticleController::class, 'destroy']);
+        Route::post('/edit/{id}', [ServiceArticleController::class, 'update']);
+    });
+});
+
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'shop-exellence'], function () {
+        Route::get('/', [ExellenceServiceController::class, 'index']);
+        Route::get('/{id}', [ExellenceServiceController::class, 'show']);
+        Route::post('/create', [ExellenceServiceController::class, 'store']);
+        Route::delete('/delete/{id}', [ExellenceServiceController::class, 'delete']);
+        Route::post('/edit/{id}', [ExellenceServiceController::class, 'update']);
+        Route::post('/publish/{id}', [ExellenceServiceController::class, 'publish']);
+    });
+});
+
 
 //authentification olan user-ler daxil ola biler
 Route::middleware('auth:sanctum')->group(function () {
@@ -344,3 +379,12 @@ Route::group(['prefix' => 'options'], function () {
     Route::get('/', [OptionController::class, 'index']);
     Route::get('/{id}', [OptionController::class, 'show']);
 });
+
+//SERVICE PAGE
+Route::get('/service/article/title', [ServiceArticleTitleController::class, 'publishedTitle']);
+Route::get('/service/articles', [ServiceArticleController::class, 'index']); 
+Route::get('/service/published-articles', [ServiceArticleController::class, 'articlesOfPublishedTitle']); 
+Route::get('/service/article/{id}', [ServiceArticleController::class, 'show']);
+
+//SHOP PAGE
+Route::get('/shop/exellence/published', [AboutController::class, 'published']);
