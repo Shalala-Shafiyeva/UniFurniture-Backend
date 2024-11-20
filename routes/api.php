@@ -12,12 +12,14 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PromotionSliderController;
 use App\Http\Controllers\ServiceArticleController;
 use App\Http\Controllers\ServiceArticleTitleController;
 use App\Http\Controllers\TypeController;
 use App\Http\Controllers\UserAddressController;
 use App\Http\Controllers\UserController;
 use App\Models\ExellenceService;
+use App\Models\PromotionSlider;
 use App\Models\ServiceArticle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -305,6 +307,17 @@ Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
     });
 });
 
+Route::middleware(['auth:sanctum', "isAdmin"])->group(function () {
+    Route::group(['prefix' => 'promotion-slider'], function () {
+        Route::get('/', [PromotionSliderController::class, 'index']);
+        Route::get('/{id}', [PromotionSliderController::class, 'show']);
+        Route::post('/create', [PromotionSliderController::class, 'store']);
+        Route::delete('/delete/{id}', [PromotionSliderController::class, 'delete']);
+        Route::post('/edit/{id}', [PromotionSliderController::class, 'update']);
+        Route::post('/publish/{id}', [PromotionSliderController::class, 'publish']);
+    });
+});
+
 
 //authentification olan user-ler daxil ola biler
 Route::middleware('auth:sanctum')->group(function () {
@@ -382,9 +395,10 @@ Route::group(['prefix' => 'options'], function () {
 
 //SERVICE PAGE
 Route::get('/service/article/title', [ServiceArticleTitleController::class, 'publishedTitle']);
-Route::get('/service/articles', [ServiceArticleController::class, 'index']); 
-Route::get('/service/published-articles', [ServiceArticleController::class, 'articlesOfPublishedTitle']); 
+Route::get('/service/articles', [ServiceArticleController::class, 'index']);
+Route::get('/service/published-articles', [ServiceArticleController::class, 'articlesOfPublishedTitle']);
 Route::get('/service/article/{id}', [ServiceArticleController::class, 'show']);
 
 //SHOP PAGE
-Route::get('/shop/exellence/published', [AboutController::class, 'published']);
+Route::get('/shop/exellence/published', [ExellenceServiceController::class, 'published']);
+Route::get('/shop/promotion/slider/published', [PromotionSliderController::class, 'published']);

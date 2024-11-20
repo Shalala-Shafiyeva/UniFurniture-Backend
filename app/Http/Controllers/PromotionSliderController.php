@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ExellenceService;
+use App\Models\PromotionSlider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class ExellenceServiceController extends Controller
+class PromotionSliderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $exellence = ExellenceService::all();
+        $sliders = PromotionSlider::all();
         return response()->json([
-            "data" => $exellence
+            "data" => $sliders
         ], 200);
     }
 
@@ -34,6 +34,7 @@ class ExellenceServiceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required',
+            'subtitle'=>"required",
             'content' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -47,19 +48,20 @@ class ExellenceServiceController extends Controller
             $image = $request->file('image');
             $image_path = $image->store('aboutbanner', 'public');
         }
-        $exellence = new  ExellenceService();
-        $exellence->title = $request->title;
-        $exellence->content = strip_tags($request->content);
-        $exellence->image = $image_path;
-        if ($exellence->save()) {
+        $slider = new  PromotionSlider();
+        $slider->title = $request->title;
+        $slider->subtitle = $request->subtitle;
+        $slider->content = strip_tags($request->content);
+        $slider->image = $image_path;
+        if ($slider->save()) {
             return response()->json([
-                "data" => $exellence,
-                "message" => "Shop exellence created successfully",
+                "data" => $slider,
+                "message" => "Shop slider created successfully",
                 "success" => true
             ], 200);
         } else {
             return response()->json([
-                "message" => "Shop exellence not created",
+                "message" => "Shop slider not created",
                 "success" => false
             ], 500);
         }
@@ -70,16 +72,16 @@ class ExellenceServiceController extends Controller
      */
     public function show($id)
     {
-        $exellence = ExellenceService::find($id);
+        $slider = PromotionSlider::find($id);
         return response()->json([
-            "data" => $exellence
+            "data" => $slider
         ], 200);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ExellenceService $exellenceService)
+    public function edit(PromotionSlider $promotionSlider)
     {
         //
     }
@@ -90,7 +92,8 @@ class ExellenceServiceController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|max:255',
+            'title' => 'required',
+            'subtitle' => 'required',
             'content' => 'required',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -100,23 +103,24 @@ class ExellenceServiceController extends Controller
             ], 422);
         }
 
-        $exellence = ExellenceService::find($id);
-        $exellence->title = $request->title;
-        $exellence->content = strip_tags($request->content);
+        $slider = PromotionSlider::find($id);
+        $slider->title = $request->title;
+        $slider->subtitle = $request->subtitle;
+        $slider->content = strip_tags($request->content);
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $image_path = $image->store('aboutbanner', 'public');
-            $exellence->image = $image_path;
+            $slider->image = $image_path;
         }
-        if ($exellence->save()) {
+        if ($slider->save()) {
             return response()->json([
-                "data" => $exellence,
-                "message" => "Shop exellence updated successfully",
+                "data" => $slider,
+                "message" => "Shop slider updated successfully",
                 "success" => true
             ], 200);
         } else {
             return response()->json([
-                "message" => "Shop exellence not updated",
+                "message" => "Shop slider not updated",
                 "success" => false
             ], 500);
         }
@@ -127,15 +131,15 @@ class ExellenceServiceController extends Controller
      */
     public function delete($id)
     {
-        $exellence = ExellenceService::find($id);
-        if ($exellence->delete()) {
+        $slider = PromotionSlider::find($id);
+        if ($slider->delete()) {
             return response()->json([
-                "message" => "Shop exellence deleted successfully",
+                "message" => "Shop slider deleted successfully",
                 "success" => true
             ], 200);
         } else {
             return response()->json([
-                "message" => "Shop exellence not deleted",
+                "message" => "Shop slider not deleted",
                 "success" => false
             ], 500);
         }
@@ -143,32 +147,24 @@ class ExellenceServiceController extends Controller
 
     public function publish($id){
         try {
-            $exellences = ExellenceService::where('is_publish', true)->get();
-            if ($exellences) {
-                foreach ($exellences as $exellence) {
-                    $exellence->is_publish = false;
-                    $exellence->save();
-                }
-            }
-
-            $exellence = ExellenceService::find($id);
-            if (!$exellence) {
+            $slider = PromotionSlider::find($id);
+            if (!$slider) {
                 return response()->json([
                     "message" => "Banner not found",
                     "success" => false
                 ], 404);
             }
 
-            $exellence->is_publish = true;
-            if ($exellence->save()) {
+            $slider->is_publish = true;
+            if ($slider->save()) {
                 return response()->json([
-                    "data" => $exellence,
-                    "message" => "About exellence published successfully",
+                    "data" => $slider,
+                    "message" => "About slider published successfully",
                     "success" => true
                 ], 200);
             } else {
                 return response()->json([
-                    "message" => "Failed to save exellence",
+                    "message" => "Failed to save slider",
                     "success" => false
                 ], 500);
             }
@@ -181,15 +177,15 @@ class ExellenceServiceController extends Controller
     }
 
     public function published(){
-        $exellences = ExellenceService::where('is_publish', true)->first();
-        if(!$exellences){
+        $sliders = PromotionSlider::where('is_publish', true)->get();
+        if(!$sliders){
             return response()->json([
-                'message'=>'No exellence found',
+                'message'=>'No slider found',
                 'success'=>false
             ]);
         }
         return response()->json([
-            "data" => $exellences,
+            "data" => $sliders,
             "success" => true
         ], 200);
     }
