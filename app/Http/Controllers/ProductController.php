@@ -30,15 +30,27 @@ class ProductController extends Controller
                 "success" => false
             ], 404);
         }
+        $rating = [];
+        $reviews = [];
+        foreach ($products as $product) {
+            // $data[]=[
+            //     'id'=>$product->id,
+            //     'rating'=>$this->getAverageRating($product->id)
+            // ];
+            $rating[$product->id] = $this->getAverageRating($product->id);
+            $reviews[$product->id] = $this->reviews($product->id);
+        }
         return response()->json([
             "data" => $products,
+            "rating" => $rating,
+            'reviews' => $reviews,
             "success" => true
         ], 200);
     }
 
     public function filteredProducts(Request $request)
     {
-        $products = Product::with(['category', 'type', 'characteristics', 'colors.color_images'])
+        $products = Product::with(['category', 'type', 'characteristics', 'colors.color_images', 'reviews'])
             ->where('is_publish', true)
             ->when($request->types, function ($query) use ($request) {
                 $types = explode(',', $request->types);
@@ -81,9 +93,16 @@ class ProductController extends Controller
                 });
             })
             ->get();
-
+        $rating = [];
+        $reviews = [];
+        foreach ($products as $product) {
+            $rating[][$product->id] = $this->getAverageRating($product->id);
+            $reviews[][$product->id] = $this->reviews($product->id);
+        }
         return response()->json([
             "data" => $products,
+            "rating" => $rating,
+            'reviews' => $reviews,
             "success" => true
         ]);
     }
@@ -174,12 +193,14 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product, $id)
+    public function show($id)
     {
         $product = Product::with('category', 'type', 'characteristics', 'colors.color_images')->find($id);
         if ($product) {
             return response()->json([
                 "data" => $product,
+                "rating" => $this->getAverageRating($product->id),
+                'reviews' => $this->reviews($product->id),
                 "success" => true
             ], 200);
         } else {
@@ -341,6 +362,12 @@ class ProductController extends Controller
             ->where('id', '!=', $product->id)
             ->get();
 
+        $rating = [];
+        $reviews = [];
+        foreach ($similarProducts as $product) {
+            $rating[][$product->id] = $this->getAverageRating($product->id);
+            $reviews[][$product->id] = $this->reviews($product->id);
+        }
         if ($similarProducts->isEmpty()) {
             return response()->json([
                 "message" => "No similar products found",
@@ -349,6 +376,8 @@ class ProductController extends Controller
         }
         return response()->json([
             "data" => $similarProducts,
+            "rating" => $rating,
+            'reviews' => $reviews,
             "success" => true
         ], 200);
     }
@@ -356,6 +385,12 @@ class ProductController extends Controller
     public function publishedProducts()
     {
         $products = Product::with('category', 'type', 'characteristics', 'colors.color_images')->where('is_publish', true)->get();
+        $rating = [];
+        $reviews = [];
+        foreach ($products as $product) {
+            $rating[][$product->id] = $this->getAverageRating($product->id);
+            $reviews[][$product->id] = $this->reviews($product->id);
+        }
         if ($products->isEmpty() || !$products) {
             return response()->json([
                 "message" => "No published products found",
@@ -364,6 +399,8 @@ class ProductController extends Controller
         }
         return response()->json([
             "data" => $products,
+            "rating" => $rating,
+            "reviews" => $reviews,
             "success" => true
         ], 200);
     }

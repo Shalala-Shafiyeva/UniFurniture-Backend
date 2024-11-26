@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\OrderStatus;
 use App\Models\BasketProduct;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -31,9 +32,9 @@ class OrderController extends Controller
                 'id' => $order->id,
                 'created_at' => Carbon::parse($order->created_at)->format('Y-m-d'),
                 'order_detail' => $order->order_detail,
-                "uid"=>$order->uid,
-                'address'=>$order->address,
-                'payment_type'=>$order->payment_type,
+                "uid" => $order->uid,
+                'address' => $order->address,
+                'payment_type' => $order->payment_type,
             ];
         });
 
@@ -89,4 +90,57 @@ class OrderController extends Controller
             'success' => true
         ]);
     }
+
+
+    //In Dashboard 
+    public function confirmed($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status == OrderStatus::PENDING) {
+            $order->status = OrderStatus::CONFIRMED;
+            $order->save();
+            return redirect()->route('dashboard.order.index');
+        }
+    }
+
+    public function shipped($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status == OrderStatus::CONFIRMED) {
+            $order->status = OrderStatus::SHIPPED;
+            $order->save();
+            return redirect()->route('dashboard.order.index');
+        }
+    }
+
+    public function delivered($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status == OrderStatus::SHIPPED) {
+            $order->status = OrderStatus::DELIVERED;
+            $order->save();
+            return redirect()->route('dashboard.order.index');
+        }
+    }
+
+    public function returned($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status == OrderStatus::DELIVERED) {
+            $order->status = OrderStatus::RETURNED;
+            $order->save();
+            return redirect()->route('dashboard.order.index');
+        }
+    }
+
+    public function canceled($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status == OrderStatus::PENDING) {
+            $order->status = OrderStatus::CANCELED;
+            $order->save();
+            return redirect()->route('dashboard.order.index');
+        }
+    }
+
 }

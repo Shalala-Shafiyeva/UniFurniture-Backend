@@ -10,14 +10,14 @@ class UserController extends Controller
 {
     public function index()
     {
-        $user=Auth::user();
-        if(!$user){
+        $user = Auth::user();
+        if (!$user) {
             return response()->json([
                 "message" => "User not authenticated",
                 "success" => false
             ]);
         }
-        $userData = $user->only(['name','email', 'surname', 'city', 'country', 'phone', 'profile']);
+        $userData = $user->only(['name', 'email', 'surname', 'city', 'country', 'phone', 'profile']);
         return response()->json([
             "data" => $userData,
             'success' => true
@@ -52,7 +52,7 @@ class UserController extends Controller
         $user->city = $request->city;
         $user->country = $request->country;
         $user->phone = $request->phone;
-        $old_profile=$user->profile;
+        $old_profile = $user->profile;
         if ($request->hasFile('profile')) {
             $image = $request->file('profile');
             $image_path = $image->store('profile', 'public');
