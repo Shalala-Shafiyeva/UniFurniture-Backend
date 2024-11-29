@@ -18,15 +18,14 @@ class OrderController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $orders = Order::with('order_detail')->where('user_id', $user->id)->orderBy('created_at')->get();
+        $orders = Order::with('order_detail')->where('user_id', $user->id)->orderByDesc('created_at')->get();
 
         if (!$orders || $orders->isEmpty()) {
             return response()->json([
                 "success" => false,
                 "message" => "No orders found"
-            ]);
+            ], 404);
         }
-
         $formattedOrders = $orders->map(function ($order) {
             return [
                 'id' => $order->id,
@@ -35,6 +34,8 @@ class OrderController extends Controller
                 "uid" => $order->uid,
                 'address' => $order->address,
                 'payment_type' => $order->payment_type,
+                "status"=> $order->status,
+                "total" => $order->total
             ];
         });
 
@@ -42,6 +43,15 @@ class OrderController extends Controller
             "data" => $formattedOrders,
             "success" => true,
             "message" => "Orders fetched successfully"
+        ], 200);
+    }
+
+    public function all_orders()
+    {
+        $orders = Order::with('order_detail', 'user')->orderByDesc('created_at')->get();
+        return response()->json([
+            'data' => $orders,
+            'success' => true
         ]);
     }
 
@@ -63,20 +73,22 @@ class OrderController extends Controller
         $newOrder->address = $req->address;
         $newOrder->payment_type = $req->payment_type;
         $newOrder->total = 0;
+        $newOrder->status = "PENDING";
         $newOrder->uid = uniqid();
         $newOrder->save();
 
 
         foreach ($basketProducts as $basketProduct) {
             $product = Product::find($basketProduct->product_id);
-            $total += $basketProduct->stock * $product->price;
+            $total += $basketProduct->qty * $product->price;
+
             //order_details table
             $orderDetailsBody = new OrderDetail();
             $orderDetailsBody->order_id = $newOrder->id;
             $orderDetailsBody->product_id = $basketProduct->product_id;
             $orderDetailsBody->quantity = $basketProduct->qty;
             $orderDetailsBody->price = $product->price;
-            $orderDetailsBody->total = $product->price * $basketProduct->stock;
+            $orderDetailsBody->total = $product->price * $basketProduct->qty;
             $orderDetailsBody->save();
         }
 
@@ -93,54 +105,94 @@ class OrderController extends Controller
 
 
     //In Dashboard 
+
     public function confirmed($id)
     {
-        $order = Order::findOrFail($id);
-        if ($order->status == OrderStatus::PENDING) {
-            $order->status = OrderStatus::CONFIRMED;
-            $order->save();
-            return redirect()->route('dashboard.order.index');
+        $order = Order::find($id);
+        if ($order->status == "PENDING") {
+            $order->status = "CONFIRMED";
+            if ($order->save()) {
+                return response()->json([
+                    "data" => $order,
+                    "success" => true
+                ]);
+            }
+            return response()->json([
+                "message" => "Order not confirmed",
+                "success" => false
+            ]);
         }
     }
 
     public function shipped($id)
     {
         $order = Order::findOrFail($id);
-        if ($order->status == OrderStatus::CONFIRMED) {
-            $order->status = OrderStatus::SHIPPED;
-            $order->save();
-            return redirect()->route('dashboard.order.index');
+        if ($order->status == "CONFIRMED") {
+            $order->status = "SHIPPED";
+            if ($order->save()) {
+                return response()->json([
+                    "data" => $order,
+                    "success" => true
+                ]);
+            }
+            return response()->json([
+                "message" => "Order not shipped",
+                "success" => false
+            ]);
         }
     }
 
     public function delivered($id)
     {
         $order = Order::findOrFail($id);
-        if ($order->status == OrderStatus::SHIPPED) {
-            $order->status = OrderStatus::DELIVERED;
-            $order->save();
-            return redirect()->route('dashboard.order.index');
+        if ($order->status == "SHIPPED") {
+            $order->status = "DELIVERED";
+            if ($order->save()) {
+                return response()->json([
+                    "data" => $order,
+                    "success" => true
+                ]);
+            }
+            return response()->json([
+                "message" => "Order not delivered",
+                "success" => false
+            ]);
         }
     }
 
     public function returned($id)
     {
         $order = Order::findOrFail($id);
-        if ($order->status == OrderStatus::DELIVERED) {
-            $order->status = OrderStatus::RETURNED;
-            $order->save();
-            return redirect()->route('dashboard.order.index');
+        if ($order->status == "DELIVERED") {
+            $order->status = "RETURNED";
+            if ($order->save()) {
+                return response()->json([
+                    "data" => $order,
+                    "success" => true
+                ]);
+            }
+            return response()->json([
+                "message" => "Order not returned",
+                "success" => false
+            ]);
         }
     }
 
     public function canceled($id)
     {
         $order = Order::findOrFail($id);
-        if ($order->status == OrderStatus::PENDING) {
-            $order->status = OrderStatus::CANCELED;
-            $order->save();
-            return redirect()->route('dashboard.order.index');
+        if ($order->status == "PENDING") {
+            $order->status = "CANCELED";
+            if ($order->save()) {
+                return response()->json([
+                    "data" => $order,
+                    "success" => true
+                ]);
+            }
+            return response()->json([
+                "message" => "Order not canceled",
+                "success" => false
+            ]);
         }
     }
-
 }

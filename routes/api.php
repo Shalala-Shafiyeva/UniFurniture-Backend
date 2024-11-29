@@ -350,6 +350,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'order'], function () {
         Route::get('/index', [OrderController::class, 'index']);
         Route::post('/store', [OrderController::class, 'store']);
+        Route::get('/all-orders', [OrderController::class , 'all_orders']);
+        Route::post('/confirm/{id}', [OrderController::class, 'confirmed']);
+        Route::post('/ship/{id}', [OrderController::class, 'shipped']);
+        Route::post('/deliver/{id}', [OrderController::class, 'delivered']);
+        Route::post('/return/{id}', [OrderController::class, 'returned']);
+        Route::post('/cancel/{id}', [OrderController::class, 'canceled']);
     });
 });
 
