@@ -333,6 +333,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/edit/{id}', [UserAddressController::class, 'update']);
         Route::get('/delete/{id}', [UserAddressController::class, 'delete']);
         Route::get('/default/{id}', [UserAddressController::class, 'default']);
+        Route::get('showDefaultAddress', [UserAddressController::class, 'showDefaultAddress']);
     });
 
     Route::post('/product/{productId}/addView', [ProductController::class, 'addView']);

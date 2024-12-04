@@ -49,6 +49,7 @@ class AuthController extends Controller
             'surname' => 'required:max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|min:5',
+            'checked_policy' => 'accepted',
         ]);
         if ($validator->fails()) {
             return response()->json([

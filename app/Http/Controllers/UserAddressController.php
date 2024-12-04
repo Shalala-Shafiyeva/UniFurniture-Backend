@@ -127,4 +127,19 @@ class UserAddressController extends Controller
             'success' => true
         ]);
     }
+
+    public function showDefaultAddress()
+    {
+        $address = UserAddress::where('is_default', true)->first();
+        if (!$address) {
+            return response()->json([
+                "message" => 'Choose delivery address',
+                'success' => false
+            ]);
+        }
+        return response()->json([
+            "data" => $address,
+            'success' => true
+        ]);
+    }
 }

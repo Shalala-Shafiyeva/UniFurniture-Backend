@@ -34,7 +34,7 @@ class OrderController extends Controller
                 "uid" => $order->uid,
                 'address' => $order->address,
                 'payment_type' => $order->payment_type,
-                "status"=> $order->status,
+                "status" => $order->status,
                 "total" => $order->total
             ];
         });
@@ -65,6 +65,12 @@ class OrderController extends Controller
         $user = Auth::user();
         $basketId = $user->basket->id;
         $basketProducts = BasketProduct::where('basket_id', $basketId)->get();
+        if ($basketProducts->isEmpty()) {
+            return response()->json([
+                "success" => false,
+                "message" => "Cart is empty"
+            ]);
+        }
         $total = 0;
         //orders table
         $newOrder =  new Order();

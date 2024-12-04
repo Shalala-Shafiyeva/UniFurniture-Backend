@@ -41,7 +41,8 @@ class BasketController extends Controller
     //sebetdeki mehsullarin sayi
     public function productQty()
     {
-        $productQty = BasketProduct::sum('qty');
+        $basketId = Auth::user()->basket->id;
+        $productQty = BasketProduct::where('basket_id', $basketId)->sum('qty');
         return response()->json([
             'data' => $productQty,
             'success' => true
